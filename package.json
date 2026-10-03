@@ -1,0 +1,17 @@
+{
+  "name": "prodhealth",
+  "version": "1.0.0",
+  "description": "Open-source AI product health dashboard: answer quality, user ratings, feedback hotspots, and an edge-case release gate.",
+  "author": "Zackariah Telsem (https://www.linkedin.com/in/zackariah-telsem-a8b245246/)",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve .",
+    "eval:demo": "node evals/run.mjs --mock candidate",
+    "eval:baseline": "node evals/run.mjs --mock baseline",
+    "eval": "node evals/run.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

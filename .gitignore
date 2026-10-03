@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+Thumbs.db
+.env
+evals/results/*.json
+!evals/results/.gitkeep

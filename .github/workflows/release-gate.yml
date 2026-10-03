@@ -1,0 +1,31 @@
+name: Release gate
+
+# Runs the edge-case suite on every pull request.
+# Demo mode works out of the box. To test a real model, add the secrets below
+# and switch to the "Real model" step.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Edge-case suite (demo responses)
+        run: node evals/run.mjs --mock baseline
+
+      # - name: Real model
+      #   env:
+      #     PRODHEALTH_API_KEY: ${{ secrets.PRODHEALTH_API_KEY }}
+      #   run: |
+      #     node evals/run.mjs \
+      #       --endpoint ${{ secrets.PRODHEALTH_ENDPOINT }} \
+      #       --model ${{ vars.PRODHEALTH_MODEL }} \
+      #       --baseline evals/results/baseline.json \
+      #       --out evals/results/candidate.json

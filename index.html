@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>#prodhealth · AI product health</title>
+  <meta name="description" content="An open-source dashboard that shows where people give your AI a thumbs-down, and tests every update before you ship it.">
+  <meta name="author" content="Zackariah Telsem">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="#prodhealth: see where people give your AI a 👎">
+  <meta property="og:description" content="Ratings, answer quality and comments over time, plus a test that tells you if an update is safe to ship.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css?v=2.1.0">
+  <script>
+    try { const t = localStorage.getItem("ph-theme"); if (t && t !== "auto") document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <header class="topbar glass" id="topbar">
+    <a class="brand" href="#overview" aria-label="#prodhealth home">
+      <span class="brand-mark" aria-hidden="true">#</span>
+      <span class="brand-name">prodhealth</span>
+    </a>
+
+    <div class="seg" id="range" role="tablist" aria-label="Time range">
+      <span class="seg-thumb" aria-hidden="true"></span>
+      <button role="tab" data-range="30" title="Last 30 days">30 days</button>
+      <button role="tab" data-range="90" aria-selected="true" title="Last 90 days">90 days</button>
+      <button role="tab" data-range="all" title="Everything">All</button>
+    </div>
+
+    <div class="top-actions">
+      <button class="pill source" id="source-pill" title="Use your own feedback file (CSV or JSON)">
+        <span class="dot" aria-hidden="true"></span><span id="source-label">Sample data</span><span class="pill-cta" id="source-cta">Use yours</span>
+      </button>
+      <div class="menu-wrap">
+        <button class="icon-btn" id="theme-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-menu" title="Theme (T)">
+          <span class="theme-swatch" aria-hidden="true"></span><span class="sr">Theme</span>
+        </button>
+        <div class="menu glass" id="theme-menu" role="menu" hidden>
+          <p class="menu-title">Theme</p>
+          <button role="menuitemradio" data-theme-opt="auto"><i class="sw-theme auto"></i>Auto<small>Match my device</small></button>
+          <button role="menuitemradio" data-theme-opt="light"><i class="sw-theme light"></i>Light</button>
+          <button role="menuitemradio" data-theme-opt="dark"><i class="sw-theme dark"></i>Dark</button>
+          <button role="menuitemradio" data-theme-opt="graphite"><i class="sw-theme graphite"></i>Graphite</button>
+          <button role="menuitemradio" data-theme-opt="paper"><i class="sw-theme paper"></i>Paper</button>
+          <div class="menu-sep" role="separator"></div>
+          <button role="menuitemradio" data-theme-opt="sage"><i class="sw-theme sage"></i>Sage<small>Soft green-grey</small></button>
+          <button role="menuitemradio" data-theme-opt="ocean"><i class="sw-theme ocean"></i>Ocean<small>Deep teal, dark</small></button>
+          <button role="menuitemradio" data-theme-opt="clay"><i class="sw-theme clay"></i>Clay<small>Warm sand</small></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ================= OVERVIEW ================= -->
+    <section class="view" id="view-overview" data-view="overview" aria-labelledby="h-overview">
+      <div class="hero">
+        <h1 id="h-overview">See where people give your AI a <span class="thumb" data-emoji="👎"></span></h1>
+        <p class="lede">Ratings, answer quality and comments over time. Every update is marked, so you can see what changed.</p>
+      </div>
+
+      <section class="summary card glass" id="summary" aria-label="Summary">
+        <header class="summary-head">
+          <h2>In short</h2>
+          <button class="filter-chip" id="filter-chip" hidden></button>
+        </header>
+        <ul class="summary-list" id="summary-list"></ul>
+      </section>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="grid">
+        <article class="card glass span-12" id="card-trend">
+          <header class="card-head">
+            <div>
+              <h2>Over time</h2>
+              <p class="sub" id="trend-sub">Weekly average · all topics</p>
+            </div>
+            <div class="legend" id="trend-legend"></div>
+          </header>
+          <div class="chart-box tall" id="chart-trend"></div>
+        </article>
+
+        <article class="card glass span-6" id="card-where">
+          <header class="card-head">
+            <div>
+              <h2>Where people are unhappy</h2>
+              <p class="sub">Share of 👎 by topic. Tap one to focus on it.</p>
+            </div>
+          </header>
+          <div class="hbars" id="chart-where"></div>
+        </article>
+
+        <article class="card glass span-6" id="card-reasons">
+          <header class="card-head">
+            <div>
+              <h2>Why they're unhappy</h2>
+              <p class="sub">Number of 👎 by reason. Darker means more.</p>
+            </div>
+          </header>
+          <div class="heatmap" id="chart-reasons"></div>
+        </article>
+
+        <article class="card glass span-12" id="card-releases">
+          <header class="card-head">
+            <div>
+              <h2>What each update changed</h2>
+              <p class="sub">👍 rate the week before vs. the week after</p>
+            </div>
+          </header>
+          <div class="releases" id="releases"></div>
+        </article>
+
+        <div class="span-12 more-row">
+          <button class="btn ghost" id="more-btn" aria-expanded="false" aria-controls="more-charts">More charts</button>
+        </div>
+
+        <div class="span-12 more" id="more-charts" hidden>
+          <div class="grid">
+            <article class="card glass span-7" id="card-volume">
+              <header class="card-head">
+                <div>
+                  <h2>How many ratings</h2>
+                  <p class="sub" id="volume-sub">Per week</p>
+                </div>
+                <div class="legend">
+                  <span><i class="sw s3"></i>👍</span>
+                  <span><i class="sw s4"></i>👎</span>
+                </div>
+              </header>
+              <div class="chart-box" id="chart-volume"></div>
+            </article>
+
+            <article class="card glass span-5" id="card-stars">
+              <header class="card-head">
+                <div>
+                  <h2>Star ratings</h2>
+                  <p class="sub" id="stars-sub">1 to 5 stars</p>
+                </div>
+              </header>
+              <div class="stars-hero"><span class="big" id="stars-avg">–</span><span class="stars-glyphs" id="stars-glyphs"></span></div>
+              <div class="stars" id="chart-stars"></div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FEEDBACK ================= -->
+    <section class="view" id="view-feedback" data-view="feedback" aria-labelledby="h-feedback" hidden>
+      <div class="hero">
+        <h1 id="h-feedback">Read what people said.</h1>
+        <p class="lede">Every 👎 is a clue. Filter by topic, reason or version to find the pattern.</p>
+      </div>
+
+      <div class="toolbar glass">
+        <label class="search">
+          <span data-emoji="🔎"></span>
+          <input id="fb-search" type="search" placeholder="Search comments  ( / )" autocomplete="off">
+        </label>
+        <div class="seg small" id="fb-thumb" role="tablist" aria-label="Rating filter">
+          <span class="seg-thumb" aria-hidden="true"></span>
+          <button role="tab" data-v="all" aria-selected="true">All</button>
+          <button role="tab" data-v="down">👎</button>
+          <button role="tab" data-v="up">👍</button>
+        </div>
+        <select id="fb-topic" class="select" aria-label="Topic"></select>
+        <select id="fb-reason" class="select" aria-label="Reason"></select>
+        <select id="fb-version" class="select" aria-label="Version"></select>
+        <button class="btn ghost" id="fb-clear" hidden>Clear filters</button>
+        <button class="btn ghost" id="fb-export" title="Download these comments as a CSV file">Download</button>
+      </div>
+
+      <p class="result-meta" id="fb-meta"></p>
+      <div class="feed" id="feed"></div>
+      <div class="center"><button class="btn" id="fb-more" hidden>Show more</button></div>
+    </section>
+
+    <!-- ================= TESTS ================= -->
+    <section class="view" id="view-suite" data-view="suite" aria-labelledby="h-suite" hidden>
+      <div class="hero">
+        <h1 id="h-suite">Test before you ship.</h1>
+        <p class="lede">AI can change in surprising ways. These tricky questions catch problems like made-up facts or leaked personal info before your users do.</p>
+      </div>
+
+      <div class="gate glass" id="gate">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+            <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="52" pathLength="100"></circle>
+          </svg>
+          <div class="ring-label"><span class="big" id="gate-rate">–</span><span class="small">passed</span></div>
+        </div>
+        <div class="gate-body">
+          <div class="verdict" id="verdict" data-state="idle"><span id="verdict-emoji" data-emoji="⏳"></span><span id="verdict-text">Ready to test</span></div>
+          <p class="gate-reason" id="gate-reason">Checks the new version against the one people use today.</p>
+          <div class="gate-stats" id="gate-stats"></div>
+          <div class="runs" id="runs"></div>
+        </div>
+        <div class="gate-actions">
+          <button class="btn primary" id="run-btn">Run tests</button>
+          <div class="menu-wrap">
+            <button class="btn ghost" id="suite-more" aria-haspopup="menu" aria-expanded="false" aria-controls="suite-menu">More</button>
+            <div class="menu glass right" id="suite-menu" role="menu" hidden>
+              <button role="menuitem" id="report-btn"><span data-emoji="📋"></span>Download report<small>A summary for your release notes</small></button>
+              <button role="menuitem" id="load-cand-btn"><span data-emoji="📂"></span>Load new version results<small>A file from evals/run.mjs</small></button>
+              <button role="menuitem" id="load-base-btn"><span data-emoji="🗂️"></span>Load current version results</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar glass">
+        <div class="chips" id="cat-chips"></div>
+        <div class="seg small" id="case-filter" role="tablist" aria-label="Show">
+          <span class="seg-thumb" aria-hidden="true"></span>
+          <button role="tab" data-v="all" aria-selected="true">All</button>
+          <button role="tab" data-v="failing">Failing</button>
+          <button role="tab" data-v="changed">Changed</button>
+          <button role="tab" data-v="critical">Must pass</button>
+        </div>
+      </div>
+
+      <div class="cases" id="cases"></div>
+
+      <aside class="card glass howto">
+        <h2>Test your own AI</h2>
+        <ol>
+          <li>Add your own tricky questions to <code>evals/cases.js</code>. For each one, write what a good answer must (or must not) say.</li>
+          <li>Run them against your model:<pre><code>PRODHEALTH_API_KEY=… node evals/run.mjs \
+  --endpoint https://api.example.com/v1/chat/completions \
+  --model my-new-model \
+  --baseline evals/results/baseline.json \
+  --out evals/results/candidate.json</code></pre></li>
+          <li>If something important breaks, the command fails, so it can stop a release automatically. Open <b>More → Load new version results</b> here to look through the answers.</li>
+        </ol>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Made by <a href="https://www.linkedin.com/in/zackariah-telsem-a8b245246/" target="_blank" rel="noopener">Zackariah Telsem</a> · Free and open source (MIT) · © <span id="year">2026</span></p>
+    <p class="footer-links">
+      <a href="https://www.linkedin.com/in/zackariah-telsem-a8b245246/" target="_blank" rel="noopener" class="li"><span class="li-badge">in</span>Connect on LinkedIn</a>
+      <a href="#" id="repo-link" target="_blank" rel="noopener" hidden><span data-emoji="⭐"></span> Star on GitHub</a>
+      <button class="link-btn" id="keys-btn">Keyboard shortcuts</button>
+    </p>
+  </footer>
+
+  <nav class="tabbar glass" id="tabbar" aria-label="Sections">
+    <span class="tab-lens" id="tab-lens" aria-hidden="true"></span>
+    <a href="#overview" data-tab="overview" title="Overview (1)"><span data-emoji="📊"></span><span class="tab-label">Overview</span></a>
+    <a href="#feedback" data-tab="feedback" title="Comments (2)"><span data-emoji="💬"></span><span class="tab-label">Comments</span></a>
+    <a href="#suite" data-tab="suite" title="Tests (3)"><span data-emoji="🧪"></span><span class="tab-label">Tests</span><span class="tab-badge" id="tab-badge" hidden></span></a>
+  </nav>
+
+  <div class="sheet-scrim" id="keys-scrim" hidden></div>
+  <div class="sheet glass" id="keys-sheet" role="dialog" aria-modal="true" aria-labelledby="keys-title" hidden>
+    <h2 id="keys-title">Keyboard shortcuts</h2>
+    <dl class="keys">
+      <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Switch tabs</dd>
+      <dt><kbd>/</kbd></dt><dd>Search comments</dd>
+      <dt><kbd>R</kbd></dt><dd>Run tests</dd>
+      <dt><kbd>T</kbd></dt><dd>Next theme</dd>
+      <dt><kbd>Esc</kbd></dt><dd>Close menus and clear focus</dd>
+    </dl>
+    <button class="btn" id="keys-close">Done</button>
+  </div>
+
+  <div class="tooltip glass" id="tooltip" role="tooltip"></div>
+  <div class="toast glass" id="toast" role="status" aria-live="polite"></div>
+  <input type="file" id="file-input" accept=".csv,.json,application/json,text/csv" hidden>
+  <input type="file" id="run-input" accept=".json,application/json" hidden>
+
+  <script src="evals/cases.js?v=2.1.0"></script>
+  <script src="evals/grader.js?v=2.1.0"></script>
+  <script src="assets/js/emoji.js?v=2.1.0"></script>
+  <script src="assets/js/data.js?v=2.1.0"></script>
+  <script src="assets/js/charts.js?v=2.1.0"></script>
+  <script src="assets/js/app.js?v=2.1.0"></script>
+</body>
+</html>

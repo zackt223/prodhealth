@@ -1,0 +1,11 @@
+timestamp,thumb,stars,topic,reason,version,quality,prompt,comment
+2026-09-01T09:12:00Z,up,5,Code help,,v1.0,0.91,Why does my useEffect run twice?,Clear and correct. Thanks!
+2026-09-01T10:40:00Z,down,2,Search & facts,Incorrect / made up,v1.0,0.62,Who invented the QR code?,It named the wrong company.
+2026-09-02T14:03:00Z,up,,Summaries,,v1.0,0.88,TL;DR this meeting transcript,
+2026-09-03T08:55:00Z,down,1,Math,Incorrect / made up,v1.0,0.40,What's 15% tip on $86.40?,Off by a dollar.
+2026-09-04T17:21:00Z,up,4,Writing,,v1.0,0.85,Make this email sound friendlier,Nice tone.
+2026-09-05T11:30:00Z,down,,Writing,Too long,v1.1,0.70,Rewrite my headline,I wanted one line not five.
+2026-09-06T13:45:00Z,up,5,Code help,,v1.1,0.93,Fix this SQL join,Saved me an hour.
+2026-09-07T19:02:00Z,down,2,Travel planning,Outdated info,v1.1,0.58,Do I need a visa for Vietnam?,Those rules changed this year.
+2026-09-08T07:15:00Z,up,,Search & facts,,v1.1,0.90,How tall is the Burj Khalifa?,
+2026-09-09T16:48:00Z,down,1,Billing & account,Off-tone,v1.1,0.55,Why was I charged twice?,Felt dismissive.
